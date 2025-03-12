@@ -25,8 +25,9 @@ public class TufUtils {
 
     public static void writeToFile(String fileName, String value) {
         try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(fileName, true));
-            writer.append(value);
+            FileWriter writer = new FileWriter(fileName, true);
+            writer.write(value);
+            writer.flush();
             writer.close();
         } catch (Exception e) {
             e.printStackTrace();
