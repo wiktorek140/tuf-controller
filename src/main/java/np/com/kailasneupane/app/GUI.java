@@ -252,7 +252,12 @@ public class GUI {
                 colorView.setBackground(jColorChooser.getColor());
                 colorCode.setText("#" + colorInput);
                 if (lightTypeComboBox.getSelectedIndex() != 2) {
-                    TufUtils.updateKeyboard(colorInput);
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            TufUtils.updateKeyboard(colorInput);
+                        }
+                   }).start();
                 } else {
                     // System.out.println("mode is set to color cycle. Color change will not be visible.");
                 }
