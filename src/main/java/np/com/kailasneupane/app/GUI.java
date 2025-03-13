@@ -1,6 +1,7 @@
 package np.com.kailasneupane.app;
 
 import np.com.kailasneupane.utils.ColorChooserPanel;
+import np.com.kailasneupane.utils.FanSpeed;
 import np.com.kailasneupane.utils.TufUtils;
 
 import javax.swing.*;
@@ -37,8 +38,8 @@ public class GUI {
     JComboBox<String> speedBox;
     JToggleButton toggleButton;
 
-    String lightEffects[] = {"static", "breathing", "color cycle", "strobe"};
-    String speed[] = {"slow", "normal", "fast"};
+    String lightEffects[] = { "static", "breathing", "color cycle", "strobe" };
+    String speed[] = { "slow", "normal", "fast" };
 
     Color bluish = new Color(59, 89, 182);
     Font f = new Font("serif", Font.BOLD, 14);
@@ -56,19 +57,18 @@ public class GUI {
 
         Color initialColor = Color.decode(TufUtils.readLEDColor());
 
-        //frame
+        // frame
         frame = new JFrame("TUF Controller");
-        //frame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+        // frame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        //Output text
+        // Output text
         textOutput = new JLabel("Keyboard LED Controller");
         textOutput.setFont(fTitle);
         textOutput.setSize(10, 10);
         textOutput.setBounds(10, 20, 230, 15);
         textOutput.setOpaque(true);
         frame.add(textOutput);
-
 
         jColorChooser = new ColorChooserPanel().chooser;
         jColorChooser.setColor(initialColor);
@@ -79,27 +79,9 @@ public class GUI {
         for (AbstractColorChooserPanel panel : panels) {
             if ("HSL".equals(panel.getDisplayName())) {
                 jColorChooser.add(panel);
-
-//                List<JSlider> sliders = np.com.kailasneupane.utils.SwingUtils.getDescendantsOfType(JSlider.class, panel, true);
-//                List<JRadioButton> radioButtons = np.com.kailasneupane.utils.SwingUtils.getDescendantsOfType(JRadioButton.class, panel, true);
-//                List<JSpinner> spinners = np.com.kailasneupane.utils.SwingUtils.getDescendantsOfType(JSpinner.class, panel, true);
-//                for (JSlider slider : sliders) {
-//                    slider.setVisible(false);
-//                }
-//
-//                for (JRadioButton rb : radioButtons) {
-//                    rb.setVisible(false);
-//                }
-//
-//                for (JSpinner js : spinners) {
-//                    js.setVisible(false);
-//                }
-
             }
         }
         jColorChooser.setPreviewPanel(new JPanel());
-        ////////////
-        //System.out.println(jColorChooser);
         frame.add(jColorChooser);
 
         textOutput2 = new JLabel("Color");
@@ -115,12 +97,11 @@ public class GUI {
         colorView.setBackground(initialColor);
         frame.add(colorView);
 
-
         colorCode = new JTextField("#" + getColorCode(initialColor));
         colorCode.setBounds(210, 230, 70, 20);
         frame.add(colorCode);
 
-        //button
+        // button
         colorSet = new JButton("set");
         colorSet.setBounds(290, 230, 57, 20);
         colorSet.setFocusPainted(false);
@@ -174,7 +155,6 @@ public class GUI {
         colorIntensitySlider.setValue(TufUtils.readLEDIntensity());
         frame.add(colorIntensitySlider);
 
-
         textOutput6 = new JLabel("FAN Controller");
         textOutput6.setSize(10, 10);
         textOutput6.setBounds(12, 395, 140, 15);
@@ -183,7 +163,7 @@ public class GUI {
 
         toggleButton = new JToggleButton("Notification ON");
         toggleButton.setBounds(250, 390, 150, 20);
-        //frame.add(toggleButton);
+        // frame.add(toggleButton);
 
         Font fanFont = new Font("Tahoma", Font.BOLD, 15);
 
@@ -212,7 +192,6 @@ public class GUI {
         fanButton1.setBounds(300, 430, 100, 40);
         frame.add(fanButton1);
 
-
         frame.setLayout(null);
         frame.setIconImage(iconImg.getImage());
         frame.setSize(420, 520);
@@ -228,7 +207,6 @@ public class GUI {
     public static GUI getInstance() {
         return gui;
     }
-
 
     public void toggleVisibility() {
         frame.setVisible(!frame.isVisible());
@@ -257,9 +235,7 @@ public class GUI {
                         public void run() {
                             TufUtils.updateKeyboard(colorInput);
                         }
-                   }).start();
-                } else {
-                    // System.out.println("mode is set to color cycle. Color change will not be visible.");
+                    }).start();
                 }
             }
         });
@@ -299,46 +275,49 @@ public class GUI {
         lightTypeComboBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                int index = lightTypeComboBox.getSelectedIndex();
-                TufUtils.updateLightMode(index);
-                if (index == 3 || index == 0) {
-                    speedBox.setEnabled(false);
-                } else {
-                    speedBox.setEnabled(true);
-                }
-                if (index == 2) {
-                    colorSet.setEnabled(false);
-                } else {
-                    colorSet.setEnabled(true);
-                }
+                int lightType = lightTypeComboBox.getSelectedIndex();
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        TufUtils.updateLightMode(lightType);
+                    }
+                }).start();
+            
+                speedBox.setEnabled(!(lightType == 3 || lightType == 0));
+                colorSet.setEnabled(!(lightType == 2));
             }
         });
 
         speedBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                TufUtils.updateLightSpeed(speedBox.getSelectedIndex());
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        TufUtils.updateLightSpeed(speedBox.getSelectedIndex());
+                    }
+                }).start();
             }
         });
 
         fanButton0.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                TufUtils.updateFanMode(0);
+                TufUtils.updateFanMode(FanSpeed.SILENT);
             }
         });
 
         fanButton1.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                TufUtils.updateFanMode(1);
+                TufUtils.updateFanMode(FanSpeed.NORMAL);
             }
         });
 
         fanButton2.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                TufUtils.updateFanMode(2);
+                TufUtils.updateFanMode(FanSpeed.FAST);
             }
         });
 
@@ -346,7 +325,7 @@ public class GUI {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 notificationToggle = !notificationToggle;
-                if(notificationToggle){
+                if (notificationToggle) {
                     toggleButton.setText("Notification ON");
                 } else {
                     toggleButton.setText("Notification OFF");
@@ -357,9 +336,9 @@ public class GUI {
 
     public String readCurrentFanMode() {
         /*
-0 - normal
-1 - overboost
-2 - silent
+         * 0 - normal
+         * 1 - overboost
+         * 2 - silent
          */
         int mode = TufUtils.readFanMode();
         switch (mode) {
@@ -386,4 +365,5 @@ public class GUI {
             }
         }
     }
+
 }

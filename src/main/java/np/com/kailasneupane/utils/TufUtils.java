@@ -22,12 +22,10 @@ public class TufUtils {
     public static String THROTTLE_THERMAL_POLICY = "/sys/devices/platform/faustus/throttle_thermal_policy";
     public static String BRIGHTNESS_HW_CHANGED = "/sys/class/leds/asus::kbd_backlight/brightness_hw_changed";
 
-
     public static void writeToFile(String fileName, String value) {
         try {
-            FileWriter writer = new FileWriter(fileName, true);
-            writer.write(value);
-            writer.flush();
+            BufferedWriter writer = new BufferedWriter(new FileWriter(fileName, true));
+            writer.append(value);
             writer.close();
         } catch (Exception e) {
             e.printStackTrace();
@@ -52,9 +50,8 @@ public class TufUtils {
         return data;
     }
 
-
     public static void updateKeyboard(String colorInput) {
-        //  long in = System.currentTimeMillis();
+        // long in = System.currentTimeMillis();
         String r = colorInput.substring(0, 2);
         String g = colorInput.substring(2, 4);
         String b = colorInput.substring(4, 6);
@@ -95,14 +92,8 @@ public class TufUtils {
         writeToFile(BRIGHTNESS, String.valueOf(value));
     }
 
-
-    public static void updateFanMode(int mode) {
-        if (mode < 0) {
-            mode = 0;
-        } else if (mode > 2) {
-            mode = 2;
-        }
-        writeToFile(THROTTLE_THERMAL_POLICY, String.valueOf(mode));
+    public static void updateFanMode(FanSpeed mode) {
+        writeToFile(THROTTLE_THERMAL_POLICY, mode.value);
     }
 
     public static int readLEDMode() {
@@ -143,7 +134,8 @@ public class TufUtils {
                     StandardOpenOption.WRITE);
             FileLock lock = fc.tryLock();
             if (lock == null) {
-                System.out.println("Another instance is already running. If it was force killed then delete file " + file.getAbsolutePath() + " and re-run the application.");
+                System.out.println("Another instance is already running. If it was force killed then delete file "
+                        + file.getAbsolutePath() + " and re-run the application.");
                 System.exit(1);
             }
         } catch (IOException e) {
