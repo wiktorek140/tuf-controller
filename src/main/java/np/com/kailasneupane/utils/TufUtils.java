@@ -125,9 +125,8 @@ public class TufUtils {
         return Integer.parseInt(readFirstLineOfFile(THROTTLE_THERMAL_POLICY));
     }
 
-    public static void lockApp(String parentDir, String lockFileName) {
-        //String userHome = System.getProperty("user.home");
-        File file = new File(parentDir, lockFileName);
+    public static FileLock lockApp() {
+        File file = new File("/tmp", ".tufJLock");
         try {
             FileChannel fc = FileChannel.open(file.toPath(),
                     StandardOpenOption.CREATE,
@@ -138,27 +137,23 @@ public class TufUtils {
                         + file.getAbsolutePath() + " and re-run the application.");
                 System.exit(1);
             }
+            return lock;
         } catch (IOException e) {
             throw new Error(e);
         }
     }
 
-//    public static void runCommand(String command) {
-//        String[] cmdline = {"sh", "-c", command};
-//        //System.out.println("$ " + command);
-//        Process process;
-//        try {
-//            process = Runtime.getRuntime().exec(cmdline);
-//            BufferedReader lineReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-//            lineReader.lines().forEach(System.out::println);
-//
-//            BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-//            errorReader.lines().forEach(System.out::println);
-//
-//            process.waitFor();
-//        } catch (InterruptedException | IOException e) {
-//            e.printStackTrace();
-//            throw new RuntimeException(e.getMessage());
-//        }
-//    }
+    public static void unlockApp(FileLock lock) {
+        if (lock != null) {
+            try {
+                lock.release();
+            } catch (IOException e) {
+                throw new Error(e);
+            }
+        }
+        File file = new File("/tmp", ".tufJLock");
+        if (file.exists()) {
+            file.delete();
+        }
+    }
 }
